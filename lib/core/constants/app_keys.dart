@@ -15,8 +15,8 @@ class AppKeys {
   // Scraper cache key
   static const String scraperCache = 'scraper_cache';
 
-  // Fallback defaults loaded securely at build time via --dart-define
-  static const String defaultNotionToken = String.fromEnvironment('NOTION_TOKEN', defaultValue: '');
-  static const String defaultOpportunitiesDbId = String.fromEnvironment('OPPORTUNITIES_DB_ID', defaultValue: '');
-  static const String defaultTimelineDbId = String.fromEnvironment('TIMELINE_DB_ID', defaultValue: '');
+  // Fallback defaults
+  static const String defaultNotionToken = '';
+  static const String defaultOpportunitiesDbId = '0125bede0c3a8375bdf4816eb04465a2';
+  static const String defaultTimelineDbId = 'cbc5bede-0c3a-8316-ae77-0116356fe49c';
 }
