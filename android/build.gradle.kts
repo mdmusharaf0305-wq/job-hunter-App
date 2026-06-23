@@ -38,6 +38,20 @@ subprojects {
                 // Fallback or ignore
             }
         }
+
+        // Clean manifest package attribute to prevent AGP 8+ build errors
+        val manifestFile = project.file("src/main/AndroidManifest.xml")
+        if (manifestFile.exists()) {
+            try {
+                var content = manifestFile.readText()
+                if (content.contains("package=\"")) {
+                    content = content.replace(Regex("package=\"[^\"]*\""), "")
+                    manifestFile.writeText(content)
+                }
+            } catch (e: Exception) {
+                // Ignore permission or file-lock issues
+            }
+        }
     }
 
     if (project.state.executed) {
@@ -48,4 +62,5 @@ subprojects {
         }
     }
 }
+
 
