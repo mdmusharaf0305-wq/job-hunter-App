@@ -22,3 +22,21 @@ subprojects {
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
+
+subprojects {
+    afterEvaluate {
+        if (project.extensions.findByName("android") != null) {
+            val android = project.extensions.getByName("android")
+            try {
+                val getNamespace = android.javaClass.getMethod("getNamespace")
+                val ns = getNamespace.invoke(android)
+                if (ns == null) {
+                    val setNamespace = android.javaClass.getMethod("setNamespace", String::class.java)
+                    setNamespace.invoke(android, "com.musharraf.jobhunter.${project.name.replace("-", "_").replace(".", "_")}")
+                }
+            } catch (e: Exception) {
+                // Fallback or ignore
+            }
+        }
+    }
+}
