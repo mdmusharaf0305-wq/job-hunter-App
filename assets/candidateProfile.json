@@ -1,0 +1,30 @@
+{
+  "experience": 4.4,
+  "preferredRoles": [
+    "Frontend Engineer",
+    "React Developer",
+    "Next.js Developer",
+    "Full Stack Developer",
+    "Full Stack Engineer",
+    "UI Developer",
+    "Software Engineer"
+  ],
+  "preferredLocations": [
+    "Bengaluru",
+    "Bangalore",
+    "Hyderabad",
+    "Remote",
+    "Chennai",
+    "Pune"
+  ],
+  "requiredSkills": [
+    "React.js", "Next.js", "TypeScript", "JavaScript (ES6+)", "Redux Toolkit", "Tailwind CSS", "HTML5", "CSS3",
+    "Node.js", "Express.js", "MongoDB", "REST APIs", "JWT Authentication",
+    "GraphQL", "Apollo Client", "Axios", "Fetch API",
+    "SSR", "SSG", "ISR", "Code Splitting", "Lazy Loading", "Memoization",
+    "Jest", "React Testing Library (RTL)", "Cypress", "Mocha", "Chai",
+    "Git", "GitHub", "Webpack", "Vite", "VS Code", "GitHub Copilot", "Cursor AI"
+  ],
+  "salaryExpectations": "₹15L - ₹25L",
+  "remotePreference": "Hybrid"
+}

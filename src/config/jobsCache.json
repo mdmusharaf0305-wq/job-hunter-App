@@ -1,0 +1,80 @@
+[
+  {
+    "id": "in-9c079b3bb2ae3dcb",
+    "title": "Full-Stack Engineer (Mid-Level)",
+    "company": "Enviu",
+    "location": "Bengaluru, Karnataka, India",
+    "portal": "Indeed",
+    "url": "https://enviu.homerun.co/full-stack-engineer-mid-level/en/?source=Indeed",
+    "datePosted": "Today",
+    "experience": "3 - 5 yrs",
+    "yoeMin": 3,
+    "yoeMax": 5,
+    "skills": ["React.js", "Next.js", "TypeScript", "Node.js", "Express.js", "MongoDB", "REST APIs", "Tailwind CSS", "Vitest", "Git", "Vite"]
+  },
+  {
+    "id": "li-4425845884",
+    "title": "Frontend Developer – Medical Imaging",
+    "company": "NeuroDiscovery AI",
+    "location": "Bengaluru, Karnataka, India",
+    "portal": "Linkedin",
+    "url": "https://www.linkedin.com/jobs/search/?currentJobId=4425845884",
+    "datePosted": "Yesterday",
+    "experience": "4 - 5 yrs",
+    "yoeMin": 4,
+    "yoeMax": 5,
+    "skills": ["React.js", "TypeScript", "JavaScript", "HTML5", "CSS3", "Git"]
+  },
+  {
+    "id": "in-ed91254cad1830af",
+    "title": "MS Dynamics PowerApps Developer",
+    "company": "PwC",
+    "location": "Bengaluru, Karnataka, India",
+    "portal": "Workday",
+    "url": "https://pwc.wd3.myworkdayjobs.com/en-US/Global_Experienced_Careers/job/Bengaluru-Millenia/IN-Senior-Associate-PowerApps-Developer--MS-Dynamics-Advisory-Bangalore_735308WD-1",
+    "datePosted": "Today",
+    "experience": "4 - 5 yrs",
+    "yoeMin": 4,
+    "yoeMax": 5,
+    "skills": ["React.js", "JavaScript", "REST APIs", "CSS3", "HTML5"]
+  },
+  {
+    "id": "li-4425527223",
+    "title": "Frontend Developer",
+    "company": "hackajob",
+    "location": "Bengaluru, Karnataka, India",
+    "portal": "Linkedin",
+    "url": "https://www.linkedin.com/jobs/search/?currentJobId=4425527223",
+    "datePosted": "2 days ago",
+    "experience": "3 - 5 yrs",
+    "yoeMin": 3,
+    "yoeMax": 5,
+    "skills": ["React.js", "TypeScript", "JavaScript", "CSS3", "Git"]
+  },
+  {
+    "id": "li-4394429035",
+    "title": "React Developer",
+    "company": "Infosys",
+    "location": "Bengaluru, Karnataka, India",
+    "portal": "Linkedin",
+    "url": "https://www.linkedin.com/jobs/search/?currentJobId=4394429035",
+    "datePosted": "2 days ago",
+    "experience": "4 - 5 yrs",
+    "yoeMin": 4,
+    "yoeMax": 5,
+    "skills": ["React.js", "JavaScript", "Redux Toolkit", "HTML5", "CSS3"]
+  },
+  {
+    "id": "li-4426248485",
+    "title": "Frontend Developer",
+    "company": "Scoutit",
+    "location": "Bengaluru, Karnataka, India",
+    "portal": "Linkedin",
+    "url": "https://www.linkedin.com/jobs/search/?currentJobId=4426248485",
+    "datePosted": "3 days ago",
+    "experience": "3 - 5 yrs",
+    "yoeMin": 3,
+    "yoeMax": 5,
+    "skills": ["React.js", "JavaScript", "HTML5", "CSS3"]
+  }
+]
