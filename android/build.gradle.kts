@@ -19,6 +19,18 @@ subprojects {
     project.evaluationDependsOn(":app")
 }
 
+subprojects {
+    afterEvaluate {
+        if (extensions.findByName("android") != null) {
+            configure<com.android.build.gradle.BaseExtension>("android") {
+                if (namespace == null) {
+                    namespace = "com.musharraf.jobhunter.${project.name.replace("-", "_")}"
+                }
+            }
+        }
+    }
+}
+
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
