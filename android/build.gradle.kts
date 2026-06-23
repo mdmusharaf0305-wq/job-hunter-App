@@ -37,6 +37,22 @@ subprojects {
             } catch (e: Exception) {
                 // Fallback or ignore
             }
+
+            try {
+                val compileSdkVersionMethod = android.javaClass.getMethod("compileSdkVersion", Int::class.javaPrimitiveType)
+                compileSdkVersionMethod.invoke(android, 36)
+            } catch (e: Exception) {
+                // Ignore
+            }
+
+            try {
+                val getDefaultConfig = android.javaClass.getMethod("getDefaultConfig")
+                val defaultConfig = getDefaultConfig.invoke(android)
+                val targetSdkVersionMethod = defaultConfig.javaClass.getMethod("targetSdkVersion", Int::class.javaPrimitiveType)
+                targetSdkVersionMethod.invoke(defaultConfig, 34)
+            } catch (e: Exception) {
+                // Ignore
+            }
         }
 
         // Clean manifest package attribute to prevent AGP 8+ build errors
