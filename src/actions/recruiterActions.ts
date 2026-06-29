@@ -1,6 +1,8 @@
 'use server';
 
 import { revalidatePath, revalidateTag } from 'next/cache';
+import fs from 'fs';
+import path from 'path';
 
 import { 
   fetchRecruiters, 
@@ -30,6 +32,10 @@ const EMPTY_DASHBOARD_METRICS: DashboardMetrics = {
   followUpsDue: [],
   latestActivity: [],
   upcomingInterviews: [],
+  companiesCount: 0,
+  inboundCount: 0,
+  outboundCount: 0,
+  historyCount: 0,
   allApplications: [],
 };
 
@@ -88,7 +94,62 @@ export async function updateRecruiterAction(id: string, data: Partial<Recruiter>
 
 export async function getDashboardMetricsAction(): Promise<DashboardMetrics> {
   try {
-    return await withTimeout(getDashboardMetrics(), 8000, 'Dashboard metrics');
+    const metrics = await withTimeout(getDashboardMetrics(), 8000, 'Dashboard metrics');
+    
+    // Compute companiesCount here on the server side
+    let companiesCount = 0;
+    try {
+      const dbCompaniesSet = new Set<string>();
+      const formatCompanyName = (name: string): string => {
+        const titleCase = (str: string) => {
+          return str
+            .toLowerCase()
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+        };
+        const upper = name.toUpperCase();
+        const acronyms = ['TCS', 'IBM', 'JPMC', 'CRED', 'MNC', 'IT', 'LTI', 'EY', 'DXC', 'HCL', 'UST', 'JSW', 'NLB', 'CGI', 'PITCS', 'RGBSI', 'EY-3', 'ICICI', 'HP', 'GE', 'SBI', 'ITC'];
+        if (acronyms.includes(upper)) return upper;
+        return titleCase(name);
+      };
+
+      metrics.allApplications.forEach(app => {
+        let targetCompName = "";
+        const isClientValid = app.client && !['direct', 'n/a', 'unknown', ''].includes(app.client.toLowerCase());
+        if (isClientValid) {
+          targetCompName = app.client.trim();
+        } else if (app.company && app.company.toLowerCase() !== 'unknown') {
+          targetCompName = app.company.trim();
+        }
+
+        if (targetCompName) {
+          const nameLower = targetCompName.toLowerCase();
+          const agencyKeywords = ['consulting', 'consultancy', 'staffing', 'talent', 'recruitment', 'solutions', 'placements', 'hr services', 'manpower', 'agency', 'partners'];
+          const isAgency = agencyKeywords.some(keyword => nameLower.includes(keyword));
+          if (!isAgency) {
+            dbCompaniesSet.add(formatCompanyName(targetCompName));
+          }
+        }
+      });
+
+      const filePath = path.join(process.cwd(), 'src/config/companies.json');
+      if (fs.existsSync(filePath)) {
+        const fileContent = fs.readFileSync(filePath, 'utf-8');
+        const companies = JSON.parse(fileContent);
+        companies.forEach((c: { name: string }) => {
+          dbCompaniesSet.add(formatCompanyName(c.name));
+        });
+      }
+      companiesCount = dbCompaniesSet.size;
+    } catch (err) {
+      console.error('Error computing companies count in action:', err);
+    }
+    
+    return {
+      ...metrics,
+      companiesCount
+    };
   } catch (error) {
     console.error('Action error getting dashboard metrics:', error);
     return EMPTY_DASHBOARD_METRICS;

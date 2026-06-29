@@ -43,7 +43,7 @@ export default function RootLayout({
           <Sidebar />
           
           {/* Main Content Area */}
-          <main className="flex-1 min-w-0 w-full max-w-full lg:ml-64 min-h-[100dvh] flex flex-col p-4 md:p-8 lg:p-10 pt-[calc(5rem+env(safe-area-inset-top,0px))] lg:pt-10 transition-all duration-300">
+          <main className="flex-1 min-w-0 w-full max-w-full lg:ml-64 min-h-[100dvh] flex flex-col p-4 md:p-8 lg:p-10 pt-[calc(8.5rem+env(safe-area-inset-top,0px))] pb-24 lg:pt-24 lg:pb-10 transition-all duration-300">
             <PageTransition>
               {children}
             </PageTransition>

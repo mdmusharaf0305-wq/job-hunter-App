@@ -1397,6 +1397,10 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
       .slice(0, 4);
   }
 
+  const inboundCount = applications.filter(a => a.type === 'inbound').length;
+  const outboundCount = applications.filter(a => a.type === 'outbound').length;
+  const historyCount = applications.length;
+
   return {
     totalOpportunities,
     activeRecruiters,
@@ -1411,6 +1415,10 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
     followUpsDue,
     latestActivity,
     upcomingInterviews,
+    companiesCount: 0,
+    inboundCount,
+    outboundCount,
+    historyCount,
     allApplications: applications
   };
 }

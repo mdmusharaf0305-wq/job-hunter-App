@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../shared/services/providers.dart';
-import '../shared/domain/dashboard_metrics.dart';
 
 // Import Screens (to be implemented)
 import '../features/dashboard/presentation/dashboard_screen.dart';
@@ -80,16 +77,16 @@ final appRouter = GoRouter(
 );
 
 // Base Shell Scaffold providing common navigation across all hub pages
-class BaseNavigationScaffold extends ConsumerStatefulWidget {
+class BaseNavigationScaffold extends StatefulWidget {
   final Widget child;
 
   const BaseNavigationScaffold({super.key, required this.child});
 
   @override
-  ConsumerState<BaseNavigationScaffold> createState() => _BaseNavigationScaffoldState();
+  State<BaseNavigationScaffold> createState() => _BaseNavigationScaffoldState();
 }
 
-class _BaseNavigationScaffoldState extends ConsumerState<BaseNavigationScaffold> {
+class _BaseNavigationScaffoldState extends State<BaseNavigationScaffold> {
   int _calculateSelectedIndex(BuildContext context) {
     final String location = GoRouterState.of(context).uri.toString();
     if (location.startsWith('/dashboard')) return 0;
@@ -144,154 +141,10 @@ class _BaseNavigationScaffoldState extends ConsumerState<BaseNavigationScaffold>
     }
   }
 
-  Widget _buildSidebarItem({
-    required BuildContext context,
-    required int index,
-    required String label,
-    required String emoji,
-    required int selectedIndex,
-  }) {
-    final isActive = index == selectedIndex;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return InkWell(
-      onTap: () {
-        final scaffold = Scaffold.maybeOf(context);
-        if (scaffold != null && scaffold.isDrawerOpen) {
-          Navigator.of(context).pop();
-        }
-        _onItemTapped(index, context);
-      },
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 2),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: isActive
-              ? (isDark ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.05))
-              : Colors.transparent,
-          border: isActive
-              ? Border(
-                  left: BorderSide(
-                    color: isDark ? Colors.blueAccent : Colors.blue,
-                    width: 4,
-                  ),
-                )
-              : null,
-        ),
-        child: Row(
-          children: [
-            Text(
-              emoji,
-              style: const TextStyle(fontSize: 16),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-                  color: isActive
-                      ? (isDark ? Colors.white : Colors.black87)
-                      : (isDark ? Colors.white70 : Colors.black54),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAIFollowUpWidget(BuildContext context, int count, bool isDark) {
-    final bgColor = isDark
-        ? Colors.blueAccent.withOpacity(0.15)
-        : Colors.blue.shade50;
-    final borderColor = isDark
-        ? Colors.blueAccent.withOpacity(0.25)
-        : Colors.blue.shade100;
-
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: borderColor),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.star,
-                size: 14,
-                color: isDark ? Colors.blueAccent : Colors.blue.shade700,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                "AI Follow-up Alert",
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : Colors.blue.shade900,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            "You have $count follow-up${count > 1 ? 's' : ''} pending.",
-            style: TextStyle(
-              fontSize: 11,
-              color: isDark ? Colors.white70 : Colors.blue.shade800,
-              height: 1.4,
-            ),
-          ),
-          const SizedBox(height: 8),
-          InkWell(
-            onTap: () {
-              final scaffold = Scaffold.maybeOf(context);
-              if (scaffold != null && scaffold.isDrawerOpen) {
-                Navigator.of(context).pop();
-              }
-              _onItemTapped(0, context); // Go to dashboard
-            },
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  "Review actions",
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.blueAccent : Colors.blue.shade700,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                Icon(
-                  Icons.chevron_right,
-                  size: 12,
-                  color: isDark ? Colors.blueAccent : Colors.blue.shade700,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final int selectedIndex = _calculateSelectedIndex(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    // Watch metrics to get follow-up alert counts
-    final metricsAsync = ref.watch(dashboardMetricsProvider);
-    final int followUpsCount = metricsAsync.value?.followUpsDue.length ?? 0;
 
     final navDestinations = const [
       NavigationDestination(icon: Icon(Icons.dashboard_outlined), label: 'Dashboard'),
@@ -307,224 +160,28 @@ class _BaseNavigationScaffoldState extends ConsumerState<BaseNavigationScaffold>
       NavigationDestination(icon: Icon(Icons.settings_outlined), label: 'Settings'),
     ];
 
+    // For mobile portrait views, we use a standard NavigationBar (Material 3 bottom nav bar)
+    // For tablet/landscape, we adapt to a NavigationRail layout! This gives native adaptive UI.
     return Scaffold(
       body: LayoutBuilder(
         builder: (context, constraints) {
           if (constraints.maxWidth >= 720) {
-            // Premium Adaptive Web-style Sidebar for tablets and desktops
+            // Adaptive Navigation Rail for larger screens
             return Row(
               children: [
-                Container(
-                  width: 256,
-                  color: isDark ? const Color(0xFF0F0F15) : Colors.white,
-                  child: Column(
-                    children: [
-                      // Brand Header
-                      Container(
-                        height: 64,
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        decoration: BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(
-                              color: isDark ? Colors.white10 : Colors.black12,
-                            ),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 32,
-                              height: 32,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(8),
-                                gradient: const LinearGradient(
-                                  colors: [Colors.blueAccent, Colors.indigoAccent, Colors.cyan],
-                                  begin: Alignment.bottomLeft,
-                                  end: Alignment.topRight,
-                                ),
-                              ),
-                              child: const Icon(
-                                Icons.layers,
-                                color: Colors.white,
-                                size: 18,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  "MUSHARRAF'S",
-                                  style: TextStyle(
-                                    fontSize: 9,
-                                    fontFamily: 'monospace',
-                                    fontWeight: FontWeight.bold,
-                                    color: isDark ? Colors.white70 : Colors.black54,
-                                    letterSpacing: 1.5,
-                                  ),
-                                ),
-                                Text(
-                                  "Job Hunt",
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w900,
-                                    color: isDark ? Colors.white : Colors.black87,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      
-                      // Navigation List
-                      Expanded(
-                        child: ListView(
-                          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-                          children: [
-                            _buildSidebarItem(
-                              context: context,
-                              index: 0,
-                              label: 'Dashboard',
-                              emoji: '📊',
-                              selectedIndex: selectedIndex,
-                            ),
-                            _buildSidebarItem(
-                              context: context,
-                              index: 1,
-                              label: 'Companies Watchlist',
-                              emoji: '🏢',
-                              selectedIndex: selectedIndex,
-                            ),
-                            _buildSidebarItem(
-                              context: context,
-                              index: 2,
-                              label: 'Current Pipeline',
-                              emoji: '🎯',
-                              selectedIndex: selectedIndex,
-                            ),
-                            _buildSidebarItem(
-                              context: context,
-                              index: 3,
-                              label: 'Inbound Applications',
-                              emoji: '📥',
-                              selectedIndex: selectedIndex,
-                            ),
-                            _buildSidebarItem(
-                              context: context,
-                              index: 4,
-                              label: 'Outbound Applications',
-                              emoji: '📤',
-                              selectedIndex: selectedIndex,
-                            ),
-                            _buildSidebarItem(
-                              context: context,
-                              index: 5,
-                              label: 'Applications History',
-                              emoji: '📜',
-                              selectedIndex: selectedIndex,
-                            ),
-                            _buildSidebarItem(
-                              context: context,
-                              index: 6,
-                              label: 'Recruiters',
-                              emoji: '👥',
-                              selectedIndex: selectedIndex,
-                            ),
-                            _buildSidebarItem(
-                              context: context,
-                              index: 7,
-                              label: 'Resume PDF',
-                              emoji: '📄',
-                              selectedIndex: selectedIndex,
-                            ),
-                            _buildSidebarItem(
-                              context: context,
-                              index: 8,
-                              label: 'AI Job Assistant',
-                              emoji: '🤖',
-                              selectedIndex: selectedIndex,
-                            ),
-                            _buildSidebarItem(
-                              context: context,
-                              index: 9,
-                              label: 'Candidate Profile',
-                              emoji: '👤',
-                              selectedIndex: selectedIndex,
-                            ),
-                            _buildSidebarItem(
-                              context: context,
-                              index: 10,
-                              label: 'API Credentials',
-                              emoji: '⚙️',
-                              selectedIndex: selectedIndex,
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // AI Follow-up Alert Widget
-                      if (followUpsCount > 0)
-                        Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: _buildAIFollowUpWidget(context, followUpsCount, isDark),
-                        ),
-
-                      // Footer Helper
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          border: Border(
-                            top: BorderSide(
-                              color: isDark ? Colors.white10 : Colors.black12,
-                            ),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              "Outreach Helper",
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontFamily: 'monospace',
-                                color: isDark ? Colors.white54 : Colors.black54,
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: isDark ? Colors.white10 : Colors.black12,
-                                borderRadius: BorderRadius.circular(4),
-                                border: Border.all(
-                                  color: isDark ? Colors.white10 : Colors.black12,
-                                ),
-                              ),
-                              child: Text(
-                                "⌥ F",
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontFamily: 'monospace',
-                                  color: isDark ? Colors.white70 : Colors.black87,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                NavigationRail(
+                  selectedIndex: selectedIndex,
+                  onDestinationSelected: (idx) => _onItemTapped(idx, context),
+                  labelType: NavigationRailLabelType.selected,
+                  destinations: navDestinations
+                      .map((d) => NavigationRailDestination(
+                            icon: d.icon,
+                            selectedIcon: d.selectedIcon ?? d.icon,
+                            label: Text(d.label),
+                          ))
+                      .toList(),
                 ),
-                
-                // Vertical divider
-                VerticalDivider(
-                  thickness: 1, 
-                  width: 1, 
-                  color: isDark ? Colors.white10 : Colors.black12,
-                ),
-                
-                // Content
+                const VerticalDivider(thickness: 1, width: 1),
                 Expanded(child: widget.child),
               ],
             );
@@ -551,158 +208,129 @@ class _BaseNavigationScaffoldState extends ConsumerState<BaseNavigationScaffold>
           if (constraints.maxWidth < 720) {
             return Drawer(
               child: SafeArea(
-                child: Column(
+                child: ListView(
+                  padding: EdgeInsets.zero,
                   children: [
-                    // Brand Header
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      width: double.infinity,
+                    const DrawerHeader(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: isDark 
-                              ? [const Color(0xFF1E1E2C), const Color(0xFF0F0F15)]
-                              : [Colors.blue, Colors.indigo],
+                          colors: [Colors.blue, Colors.indigo],
                         ),
                       ),
-                      child: Row(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          Container(
-                            width: 36,
-                            height: 36,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(8),
-                              gradient: const LinearGradient(
-                                colors: [Colors.blueAccent, Colors.indigoAccent, Colors.cyan],
-                                begin: Alignment.bottomLeft,
-                                end: Alignment.topRight,
-                              ),
-                            ),
-                            child: const Icon(
-                              Icons.layers,
-                              color: Colors.white,
-                              size: 20,
-                            ),
+                          Text(
+                            "Musharraf's",
+                            style: TextStyle(fontSize: 10, fontFamily: 'monospace', color: Colors.white70),
                           ),
-                          const SizedBox(width: 12),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "MUSHARRAF'S",
-                                style: TextStyle(
-                                  fontSize: 9,
-                                  fontFamily: 'monospace',
-                                  color: isDark ? Colors.white70 : Colors.white70,
-                                  letterSpacing: 1.5,
-                                ),
-                              ),
-                              const Text(
-                                "Job Hunt",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w900,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
+                          Text(
+                            "Job Command Center",
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white),
                           ),
                         ],
                       ),
                     ),
-                    
-                    // Navigation List
-                    Expanded(
-                      child: ListView(
-                        padding: const EdgeInsets.all(12),
-                        children: [
-                          _buildSidebarItem(
-                            context: context,
-                            index: 0,
-                            label: 'Dashboard',
-                            emoji: '📊',
-                            selectedIndex: selectedIndex,
-                          ),
-                          _buildSidebarItem(
-                            context: context,
-                            index: 1,
-                            label: 'Companies Watchlist',
-                            emoji: '🏢',
-                            selectedIndex: selectedIndex,
-                          ),
-                          _buildSidebarItem(
-                            context: context,
-                            index: 2,
-                            label: 'Current Pipeline',
-                            emoji: '🎯',
-                            selectedIndex: selectedIndex,
-                          ),
-                          _buildSidebarItem(
-                            context: context,
-                            index: 3,
-                            label: 'Inbound Applications',
-                            emoji: '📥',
-                            selectedIndex: selectedIndex,
-                          ),
-                          _buildSidebarItem(
-                            context: context,
-                            index: 4,
-                            label: 'Outbound Applications',
-                            emoji: '📤',
-                            selectedIndex: selectedIndex,
-                            
-                          ),
-                          _buildSidebarItem(
-                            context: context,
-                            index: 5,
-                            label: 'Applications History',
-                            emoji: '📜',
-                            selectedIndex: selectedIndex,
-                          ),
-                          _buildSidebarItem(
-                            context: context,
-                            index: 6,
-                            label: 'Recruiters',
-                            emoji: '👥',
-                            selectedIndex: selectedIndex,
-                          ),
-                          _buildSidebarItem(
-                            context: context,
-                            index: 7,
-                            label: 'Resume PDF',
-                            emoji: '📄',
-                            selectedIndex: selectedIndex,
-                          ),
-                          _buildSidebarItem(
-                            context: context,
-                            index: 8,
-                            label: 'AI Job Assistant',
-                            emoji: '🤖',
-                            selectedIndex: selectedIndex,
-                          ),
-                          _buildSidebarItem(
-                            context: context,
-                            index: 9,
-                            label: 'Candidate Profile',
-                            emoji: '👤',
-                            selectedIndex: selectedIndex,
-                          ),
-                          _buildSidebarItem(
-                            context: context,
-                            index: 10,
-                            label: 'API Credentials',
-                            emoji: '⚙️',
-                            selectedIndex: selectedIndex,
-                          ),
-                        ],
-                      ),
+                    ListTile(
+                      leading: const Icon(Icons.dashboard_outlined),
+                      title: const Text('Dashboard'),
+                      selected: selectedIndex == 0,
+                      onTap: () {
+                        Navigator.pop(context);
+                        _onItemTapped(0, context);
+                      },
                     ),
-                    
-                    // AI Follow-up Alert Widget in Drawer
-                    if (followUpsCount > 0)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        child: _buildAIFollowUpWidget(context, followUpsCount, isDark),
-                      ),
+                    ListTile(
+                      leading: const Icon(Icons.business_outlined),
+                      title: const Text('Companies Watchlist'),
+                      selected: selectedIndex == 1,
+                      onTap: () {
+                        Navigator.pop(context);
+                        _onItemTapped(1, context);
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.gps_fixed),
+                      title: const Text('Current Pipeline'),
+                      selected: selectedIndex == 2,
+                      onTap: () {
+                        Navigator.pop(context);
+                        _onItemTapped(2, context);
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.move_to_inbox),
+                      title: const Text('Inbound Applications'),
+                      selected: selectedIndex == 3,
+                      onTap: () {
+                        Navigator.pop(context);
+                        _onItemTapped(3, context);
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.outbox),
+                      title: const Text('Outbound Applications'),
+                      selected: selectedIndex == 4,
+                      onTap: () {
+                        Navigator.pop(context);
+                        _onItemTapped(4, context);
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.history_edu),
+                      title: const Text('Applications History'),
+                      selected: selectedIndex == 5,
+                      onTap: () {
+                        Navigator.pop(context);
+                        _onItemTapped(5, context);
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.people_outline),
+                      title: const Text('Recruiters'),
+                      selected: selectedIndex == 6,
+                      onTap: () {
+                        Navigator.pop(context);
+                        _onItemTapped(6, context);
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.description_outlined),
+                      title: const Text('Resume PDF'),
+                      selected: selectedIndex == 7,
+                      onTap: () {
+                        Navigator.pop(context);
+                        _onItemTapped(7, context);
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.android),
+                      title: const Text('AI Job Assistant'),
+                      selected: selectedIndex == 8,
+                      onTap: () {
+                        Navigator.pop(context);
+                        _onItemTapped(8, context);
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.person_outline),
+                      title: const Text('Candidate Profile'),
+                      selected: selectedIndex == 9,
+                      onTap: () {
+                        Navigator.pop(context);
+                        _onItemTapped(9, context);
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.settings_outlined),
+                      title: const Text('API Credentials'),
+                      selected: selectedIndex == 10,
+                      onTap: () {
+                        Navigator.pop(context);
+                        _onItemTapped(10, context);
+                      },
+                    ),
                   ],
                 ),
               ),

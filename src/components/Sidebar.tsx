@@ -9,7 +9,16 @@ import {
   Sun,
   Moon,
   Menu,
-  X
+  X,
+  LayoutDashboard,
+  Building2,
+  Target,
+  Inbox,
+  Send,
+  History,
+  Users,
+  FileText,
+  Bot
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { getDashboardMetricsAction } from '../actions/recruiterActions';
@@ -38,7 +47,6 @@ export default function Sidebar() {
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
     const initialTheme = savedTheme || 'light';
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTheme(initialTheme);
     
     if (initialTheme === 'dark') {
@@ -70,26 +78,33 @@ export default function Sidebar() {
       document.documentElement.classList.remove('dark');
     }
     
-    // Close mobile menu to match navigation behavior
     setTimeout(() => setIsMobileMenuOpen(false), 200);
   };
 
-  type NavItem = { name: string; href: string; emoji: string; badge?: number | string };
-  const navItems: NavItem[] = [
-    { name: 'Dashboard', href: '/dashboard', emoji: '📊' },
-    { name: 'Companies Watchlist', href: '/companies', emoji: '🏢' },
-    { name: 'Current Pipeline', href: '/pipeline', emoji: '🎯' },
-    { name: 'Inbound Applications', href: '/inbound', emoji: '📥' },
-    { name: 'Outbound Applications', href: '/outbound', emoji: '📤' },
-    { name: 'Applications History', href: '/timeline', emoji: '📜' },
-    { name: 'Recruiters', href: '/recruiters', emoji: '👥' },
-    { name: 'Resume', href: '/resume', emoji: '📄' },
-    { name: 'AI Job Assistant', href: '/chat', emoji: '🤖' },
+  const navItems = [
+    { name: 'Dashboard', href: '/dashboard', emoji: '📊', icon: LayoutDashboard, group: 'Overview' },
+    { name: 'Current Pipeline', href: '/pipeline', emoji: '🎯', icon: Target, group: 'Overview', badge: metrics?.totalOpportunities },
+    
+    { name: 'Inbound Applications', href: '/inbound', emoji: '📥', icon: Inbox, group: 'Applications', badge: metrics?.inboundCount },
+    { name: 'Outbound Applications', href: '/outbound', emoji: '📤', icon: Send, group: 'Applications', badge: metrics?.outboundCount },
+    { name: 'Applications History', href: '/timeline', emoji: '📜', icon: History, group: 'Applications', badge: metrics?.historyCount },
+    
+    { name: 'Companies Watchlist', href: '/companies', emoji: '🏢', icon: Building2, group: 'Directory', badge: metrics?.companiesCount },
+    { name: 'Recruiters', href: '/recruiters', emoji: '👥', icon: Users, group: 'Directory', badge: metrics?.activeRecruiters },
+    
+    { name: 'Resume', href: '/resume', emoji: '📄', icon: FileText, group: 'Resources' },
+    { name: 'AI Job Assistant', href: '/chat', emoji: '🤖', icon: Bot, group: 'Resources' },
   ];
+
+  const groups = ['Overview', 'Applications', 'Directory', 'Resources'];
+  
+  const bottomNavItems = navItems.filter(item => 
+    ['Dashboard', 'Current Pipeline', 'Inbound Applications', 'Outbound Applications', 'Applications History'].includes(item.name)
+  );
 
   return (
     <>
-      {/* Mobile Top Menu Bar */}
+      {/* Mobile Top Header Bar */}
       <header 
         className="lg:hidden fixed top-[calc(0.75rem+env(safe-area-inset-top,0px))] left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-md h-12 bg-white/80 dark:bg-[#0a0a0a]/80 backdrop-blur-xl border border-slate-200/50 dark:border-white/10 z-50 px-4 flex items-center justify-between select-none shadow-lg rounded-2xl"
       >
@@ -103,14 +118,92 @@ export default function Sidebar() {
           </div>
         </div>
         
-        <button 
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="p-1.5 rounded-xl bg-slate-150/50 dark:bg-white/5 border border-slate-200/55 dark:border-white/10 text-slate-700 dark:text-zinc-300 transition-all cursor-pointer active:scale-90 flex items-center justify-center shadow-sm"
-          aria-label="Toggle menu"
-        >
-          <Menu size={16} strokeWidth={2.5} />
-        </button>
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="p-1.5 rounded-xl bg-slate-150/50 dark:bg-white/5 border border-slate-200/55 dark:border-white/10 text-slate-700 dark:text-zinc-300 transition-all cursor-pointer active:scale-90 flex items-center justify-center shadow-sm"
+            aria-label="Toggle menu"
+          >
+            <Menu size={16} strokeWidth={2.5} />
+          </button>
+        </div>
       </header>
+
+      {/* Mobile Top Menu Bar (Horizontally Scrollable Tab List) */}
+      <div 
+        className="lg:hidden fixed top-[calc(4.25rem+env(safe-area-inset-top,0px))] left-0 right-0 h-11 bg-white/85 dark:bg-[#0a0a0a]/85 backdrop-blur-xl border-b border-slate-200/50 dark:border-white/10 z-40 flex items-center px-4 overflow-x-auto gap-2 scrollbar-none shadow-sm transition-all duration-305"
+      >
+        {navItems.map((item) => {
+          const isActive = pathname === item.href;
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.name}
+              href={item.href}
+              prefetch={false}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold whitespace-nowrap shrink-0 transition-all duration-200 border ${
+                isActive
+                  ? 'bg-black/5 dark:bg-white/10 text-foreground border-slate-200/50 dark:border-white/10 shadow-sm'
+                  : 'bg-transparent text-muted-foreground border-transparent hover:bg-slate-100 dark:hover:bg-white/5'
+              }`}
+            >
+              <Icon size={11} />
+              <span>{item.name}</span>
+              {item.badge !== undefined && (
+                <span className="ml-1 px-1.5 py-0.5 rounded-full bg-slate-150 dark:bg-white/10 text-slate-650 dark:text-zinc-350 font-mono text-[9px] font-bold">
+                  {item.badge}
+                </span>
+              )}
+            </Link>
+          );
+        })}
+      </div>
+
+      {/* Desktop Sticky Top Menu Bar */}
+      <div 
+        className="hidden lg:flex fixed top-0 left-64 right-0 h-14 bg-white/70 dark:bg-[#0a0a0a]/70 backdrop-blur-md border-b border-slate-200/50 dark:border-white/10 z-30 px-6 items-center justify-between select-none shadow-sm transition-all duration-300"
+      >
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-mono font-bold tracking-widest text-slate-400 dark:text-zinc-500 uppercase">
+            Active view:
+          </span>
+          <span className="text-xs font-bold text-foreground">
+            {navItems.find(item => item.href === pathname)?.name || 'Dashboard'}
+          </span>
+        </div>
+        
+        {/* Horizontal Navigation Links */}
+        <nav className="flex items-center gap-2 max-w-[70%] overflow-x-auto py-1 scrollbar-none">
+          {navItems.map((item) => {
+            const isActive = pathname === item.href;
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                prefetch={false}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all duration-200 border whitespace-nowrap ${
+                  isActive
+                    ? 'bg-black/5 dark:bg-white/10 text-foreground border-slate-200/50 dark:border-white/10 shadow-sm'
+                    : 'bg-transparent text-muted-foreground border-transparent hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5'
+                }`}
+              >
+                <Icon size={12} />
+                <span>{item.name}</span>
+                {item.badge !== undefined && (
+                  <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-mono font-bold leading-none ${
+                    isActive 
+                      ? 'bg-accent/10 text-accent' 
+                      : 'bg-slate-200 dark:bg-white/5 text-slate-600 dark:text-slate-400'
+                  }`}>
+                    {item.badge}
+                  </span>
+                )}
+              </Link>
+            );
+          })}
+        </nav>
+      </div>
 
       {/* Mobile iOS-Style Bottom Drawer Overlay */}
       {isMobileMenuOpen && (
@@ -141,6 +234,7 @@ export default function Sidebar() {
             <nav className="space-y-1.5">
               {navItems.map((item) => {
                 const isActive = pathname === item.href;
+                const Icon = item.icon;
                 return (
                   <Link
                     key={item.name}
@@ -154,7 +248,7 @@ export default function Sidebar() {
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <span className="text-[16px] leading-none">{item.emoji}</span>
+                      <Icon size={14} className="opacity-80" />
                       <span>{item.name}</span>
                     </div>
                     {item.badge !== undefined && (
@@ -170,28 +264,6 @@ export default function Sidebar() {
                 );
               })}
             </nav>
-
-            {/* AI widget for Mobile */}
-            {metrics && metrics.followUpsDue.length > 0 && (
-              <div className="p-3.5 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100/50 dark:border-blue-800/20">
-                <div className="flex items-center gap-1.5 mb-1">
-                  <Sparkles size={12} className="text-blue-600 dark:text-blue-400 animate-pulse" />
-                  <h4 className="text-xs font-bold text-slate-900 dark:text-white tracking-wide">AI Follow-up Alert</h4>
-                </div>
-                <p className="text-xs text-slate-600 dark:text-slate-350 leading-relaxed">
-                  You have <span className="text-slate-900 dark:text-white font-semibold font-mono">{metrics.followUpsDue.length}</span> follow-up{metrics.followUpsDue.length > 1 ? 's' : ''} pending.
-                </p>
-                <Link
-                  href="/dashboard"
-                  prefetch={false}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="mt-2 flex items-center text-xs text-blue-700 dark:text-blue-400 font-bold hover:underline gap-1 bg-white/50 dark:bg-black/20 w-max px-2.5 py-1 rounded-lg"
-                >
-                  Review actions 
-                  <ChevronRight size={12} />
-                </Link>
-              </div>
-            )}
 
             {/* Theme Toggle */}
             <div className="pt-1">
@@ -220,6 +292,44 @@ export default function Sidebar() {
         </div>
       )}
 
+      {/* Mobile iOS-Style Bottom Navigation Bar */}
+      <div 
+        className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-white/80 dark:bg-[#0a0a0a]/80 backdrop-blur-xl border-t border-slate-200/50 dark:border-white/10 z-40 flex items-center justify-around pb-safe select-none shadow-lg"
+      >
+        {bottomNavItems.map((item) => {
+          const isActive = pathname === item.href;
+          const Icon = item.icon;
+          // Shorten name labels so they fit nicely
+          const shortLabel = item.name
+            .replace(' Applications', '')
+            .replace(' Watchlist', '')
+            .replace('Current ', '')
+            .replace('History', 'History');
+          return (
+            <Link
+              key={item.name}
+              href={item.href}
+              prefetch={false}
+              className={`relative flex flex-col items-center justify-center w-14 h-full gap-0.5 transition-all duration-200 ${
+                isActive
+                  ? 'text-accent'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <div className="relative p-1">
+                <Icon size={18} strokeWidth={isActive ? 2.5 : 2} />
+                {item.badge !== undefined && (
+                  <span className="absolute -top-1 -right-2 px-1.5 py-0.5 rounded-full bg-accent text-white font-mono text-[8px] font-bold leading-none shadow-sm scale-90">
+                    {item.badge}
+                  </span>
+                )}
+              </div>
+              <span className="text-[9px] font-bold tracking-tight">{shortLabel}</span>
+            </Link>
+          );
+        })}
+      </div>
+
       {/* Desktop Sidebar */}
       <aside 
         className="hidden lg:flex w-64 border-r border-card-border flex-col h-screen fixed left-0 top-0 z-35 bg-background select-none transition-colors duration-300"
@@ -228,50 +338,63 @@ export default function Sidebar() {
         <div className="h-16 flex items-center px-6 border-b border-slate-200/80 dark:border-zinc-800/80 gap-3">
           <Logo />
           <div>
-            <div className="text-xs text-slate-500 dark:text-zinc-400 font-mono font-bold tracking-widest uppercase mb-0.5">Musharraf&apos;s</div>
+            <div className="text-xs text-slate-550 dark:text-zinc-400 font-mono font-bold tracking-widest uppercase mb-0.5">Musharraf&apos;s</div>
             <h1 className="text-xs font-bold text-slate-900 dark:text-white tracking-tight uppercase leading-tight font-sans">
               Job Hunt
             </h1>
           </div>
         </div>
 
-        {/* Navigation Items */}
-        <nav className="flex-1 px-4 py-6 space-y-1.5">
-          {navItems.map((item) => {
-                const isActive = pathname === item.href;
+        {/* Navigation Items Organized in Groups */}
+        <nav className="flex-1 px-4 py-6 space-y-6 overflow-y-auto scrollbar-none">
+          {groups.map((groupName) => {
+            const groupItems = navItems.filter(item => item.group === groupName);
             return (
-              <Link
-                key={item.name}
-                href={item.href}
-                prefetch={false}
-                className={`relative flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all group duration-200 ${
-                  isActive
-                    ? 'text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 hover:pl-4'
-                }`}
-              >
-                {isActive && (
-                  <motion.div
-                    layoutId="activeSidebarTab"
-                    className="absolute inset-0 bg-black/5 dark:bg-white/5 border-l-4 border-accent rounded-xl"
-                    transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                  />
-                )}
-                <div className="relative z-10 flex items-center gap-3">
-                  <span className="text-[16px] leading-none opacity-80 group-hover:opacity-100">{item.emoji}</span>
-                  <span>{item.name}</span>
+              <div key={groupName} className="space-y-1.5">
+                <h3 className="px-3 text-[10px] font-mono font-bold tracking-widest text-slate-450 dark:text-zinc-500 uppercase">
+                  {groupName}
+                </h3>
+                <div className="space-y-1">
+                  {groupItems.map((item) => {
+                    const isActive = pathname === item.href;
+                    const Icon = item.icon;
+                    return (
+                      <Link
+                        key={item.name}
+                        href={item.href}
+                        prefetch={false}
+                        className={`relative flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all group duration-200 ${
+                          isActive
+                            ? 'text-foreground bg-black/5 dark:bg-white/5 shadow-sm'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 hover:pl-4'
+                        }`}
+                      >
+                        {isActive && (
+                          <motion.div
+                            layoutId="activeSidebarTab"
+                            className="absolute inset-0 bg-black/5 dark:bg-white/5 border-l-4 border-accent rounded-xl"
+                            transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                          />
+                        )}
+                        <div className="relative z-10 flex items-center gap-3">
+                          <Icon size={14} className="opacity-80 group-hover:opacity-100" />
+                          <span>{item.name}</span>
+                        </div>
+                        
+                        {item.badge !== undefined && (
+                          <span className={`relative z-10 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold transition-colors ${
+                            isActive 
+                              ? 'bg-accent/10 text-accent' 
+                              : 'bg-card-border text-muted-foreground group-hover:bg-accent/10 group-hover:text-accent'
+                          }`}>
+                            {item.badge}
+                          </span>
+                        )}
+                      </Link>
+                    );
+                  })}
                 </div>
-                
-                {item.badge !== undefined && (
-                  <span className={`relative z-10 px-2 py-0.5 rounded-full text-xs font-mono font-bold transition-colors ${
-                    isActive 
-                      ? 'bg-accent/10 text-accent' 
-                      : 'bg-card-border text-muted-foreground group-hover:bg-accent/10 group-hover:text-accent'
-                  }`}>
-                    {item.badge}
-                  </span>
-                )}
-              </Link>
+              </div>
             );
           })}
         </nav>
@@ -281,10 +404,10 @@ export default function Sidebar() {
           <div className="px-4 py-4 mx-4 mb-4 rounded-2xl bg-card border border-card-border shadow-sm">
             <div className="flex items-center gap-2 mb-1.5">
               <Sparkles size={14} className="text-blue-600 dark:text-accent-blue animate-pulse" />
-              <h4 className="text-[13px] font-bold text-slate-950 dark:text-white tracking-wide">AI Follow-up Alert</h4>
+              <h4 className="text-[13px] font-bold text-slate-955 dark:text-white tracking-wide">AI Follow-up Alert</h4>
             </div>
             <p className="text-xs text-slate-600 dark:text-slate-350 leading-relaxed">
-              You have <span className="text-slate-950 dark:text-white font-semibold font-mono">{metrics.followUpsDue.length}</span> follow-up{metrics.followUpsDue.length > 1 ? 's' : ''} pending.
+              You have <span className="text-slate-955 dark:text-white font-semibold font-mono">{metrics.followUpsDue.length}</span> follow-up{metrics.followUpsDue.length > 1 ? 's' : ''} pending.
             </p>
             <Link
               href="/dashboard"
@@ -299,13 +422,13 @@ export default function Sidebar() {
 
         {/* Theme Toggle Button */}
         <div className="px-4 py-3 mx-4 mb-2 rounded-2xl bg-slate-50 dark:bg-white/2 border border-slate-100 dark:border-white/5 flex items-center justify-between shadow-sm backdrop-blur-md">
-          <span className="text-xs text-slate-550 dark:text-slate-400 font-mono tracking-widest uppercase">Theme Mode</span>
+          <span className="text-xs text-slate-555 dark:text-slate-455 font-mono tracking-widest uppercase">Theme Mode</span>
           <button
             onClick={toggleTheme}
             className="relative flex items-center w-24 h-8 rounded-full bg-slate-200/80 dark:bg-white/10 p-1 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-accent transition-colors overflow-hidden select-none active:scale-95"
             aria-label="Toggle Theme"
           >
-            <div className="flex w-full justify-between px-2 text-xs font-mono font-bold tracking-widest text-slate-400 dark:text-zinc-500 z-0 select-none pointer-events-none">
+            <div className="flex w-full justify-between px-2 text-xs font-mono font-bold tracking-widest text-slate-400 dark:text-zinc-550 z-0 select-none pointer-events-none">
               <span>LGT</span>
               <span>DRK</span>
             </div>
@@ -325,7 +448,7 @@ export default function Sidebar() {
 
         {/* Keyboard Shortcuts Helper */}
         <div className="p-4 border-t border-slate-150 dark:border-zinc-800/80 bg-slate-50/30 dark:bg-white/[0.01]">
-          <div className="flex items-center justify-between text-xs text-slate-550 dark:text-slate-400 font-mono">
+          <div className="flex items-center justify-between text-xs text-slate-550 dark:text-slate-455 font-mono">
             <span>Outreach Helper</span>
             <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-xs border border-slate-200/50 dark:border-white/5">⌥ F</span>
           </div>

@@ -86,6 +86,10 @@ export type DashboardMetrics = {
   followUpsDue: Recruiter[];
   latestActivity: JobApplication[];
   upcomingInterviews: JobApplication[];
+  companiesCount?: number;
+  inboundCount?: number;
+  outboundCount?: number;
+  historyCount?: number;
   allApplications: JobApplication[];
 };
 
